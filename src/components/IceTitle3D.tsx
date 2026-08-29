@@ -31,9 +31,9 @@ export default function IceTitle3D({ quality, onFailure }: { quality: Quality; o
       renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio, 1.5), 2));
       element.appendChild(renderer.domElement);
 
-      scene.add(new THREE.HemisphereLight(0xa8ffe8, 0x00101d, 2.4));
-      const key = new THREE.PointLight(0x4de8c2, 12, 10); key.position.set(-2.2, 2.2, 3.2); scene.add(key);
-      const rim = new THREE.PointLight(0x7ff0d0, 8, 10); rim.position.set(2.4, -1.2, 2.6); scene.add(rim);
+      scene.add(new THREE.HemisphereLight(0x9df8ff, 0x00101d, 2.4));
+      const key = new THREE.PointLight(0x2ee0f0, 12, 10); key.position.set(-2.2, 2.2, 3.2); scene.add(key);
+      const rim = new THREE.PointLight(0x6ef0ff, 8, 10); rim.position.set(2.4, -1.2, 2.6); scene.add(rim);
 
       const loader = new GLTFLoader();
       loader.load(
@@ -45,8 +45,8 @@ export default function IceTitle3D({ quality, onFailure }: { quality: Quality; o
             if (child instanceof THREE.Mesh) {
               disposables.push(child.geometry);
               const mat = child.material as THREE.MeshPhysicalMaterial;
-              mat.color = new THREE.Color(0xc5ffe0); // matches --ice (teal)
-              mat.emissive = new THREE.Color(0x14b894); // darker shade of --cyan (teal)
+              mat.color = new THREE.Color(0x8ff5ff); // matches --ice (cyan)
+              mat.emissive = new THREE.Color(0x0ec9e8); // darker shade of --cyan
               mat.emissiveIntensity = 0.5;
               mat.transmission = quality === "high" ? 0.45 : 0.3;
               mat.opacity = 0.75;

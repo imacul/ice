@@ -51,9 +51,9 @@ export default function IceSphere({ quality, onFailure }: { quality: Quality; on
       renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio, 1.5), 2));
       element.appendChild(renderer.domElement);
 
-      scene.add(new THREE.HemisphereLight(0xa8ffe8, 0x00101d, 2.2));
-      const point = new THREE.PointLight(0x4de8c2, 9, 8); point.position.set(-2, 2, 3); scene.add(point);
-      const rim = new THREE.PointLight(0x7ff0d0, 6, 8); rim.position.set(2, -1, 2.5); scene.add(rim);
+      scene.add(new THREE.HemisphereLight(0x9df8ff, 0x00101d, 2.2));
+      const point = new THREE.PointLight(0x2ee0f0, 9, 8); point.position.set(-2, 2, 3); scene.add(point);
+      const rim = new THREE.PointLight(0x6ef0ff, 6, 8); rim.position.set(2, -1, 2.5); scene.add(rim);
 
       const loader = new GLTFLoader();
       loader.load(
@@ -72,8 +72,8 @@ export default function IceSphere({ quality, onFailure }: { quality: Quality; on
               disposables.push(child.geometry);
               const mat = child.material as THREE.MeshPhysicalMaterial;
               const crackMap = makeCrackNormalMap();
-              mat.color = new THREE.Color(0x7ee8d8); // more clearly teal/cyan - a solid sphere reads much greener than thin lettering at the same hex
-              mat.emissive = new THREE.Color(0x0ea88f);
+              mat.color = new THREE.Color(0x8ff5ff); // clearly cyan (blue >= green channel) - the earlier teal read as green once combined with lights
+              mat.emissive = new THREE.Color(0x0ec9e8);
               mat.emissiveIntensity = 0.5;
               mat.transmission = quality === "high" ? 0.28 : 0.18;
               mat.opacity = 0.93;
