@@ -63,11 +63,17 @@ export default function IceSphere({ quality, onFailure }: { quality: Quality; on
           const orb = gltf.scene;
           orb.traverse((child) => {
             if (child instanceof THREE.Mesh) {
+              // Recenter the geometry itself (not just the object's position) so
+              // rotation pivots on the visual center - otherwise it orbits instead
+              // of spinning in place, since the mesh's own origin sits off to one side.
+              child.geometry.computeBoundingBox();
+              const localCenter = child.geometry.boundingBox!.getCenter(new THREE.Vector3());
+              child.geometry.translate(-localCenter.x, -localCenter.y, -localCenter.z);
               disposables.push(child.geometry);
               const mat = child.material as THREE.MeshPhysicalMaterial;
               const crackMap = makeCrackNormalMap();
-              mat.color = new THREE.Color(0xc5ffe0); // matches --ice (teal), same palette as the ICE title
-              mat.emissive = new THREE.Color(0x14b894); // darker shade of --cyan (teal)
+              mat.color = new THREE.Color(0x7ee8d8); // more clearly teal/cyan - a solid sphere reads much greener than thin lettering at the same hex
+              mat.emissive = new THREE.Color(0x0ea88f);
               mat.emissiveIntensity = 0.5;
               mat.transmission = quality === "high" ? 0.28 : 0.18;
               mat.opacity = 0.93;
