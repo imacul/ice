@@ -1,31 +1,61 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import AmbientCanvas from "./AmbientCanvas";
-import IceSphere from "./IceSphere";
-import { initialQuality, samplePerformance, type Quality } from "./quality";
-const FrozenObject = lazy(() => import("./FrozenObject"));
+import AmbientCanvas from "./components/AmbientCanvas";
+import IceTitle3D from "./components/IceTitle3D";
+import IceSphere, { CssIceSphere } from "./components/IceSphere";
+import IceSword from "./components/IceSword";
+import SceneErrorBoundary from "./components/SceneErrorBoundary";
+import { initialQuality, type Quality } from "./lib/quality";
+import { supportsWebGL } from "./lib/webgl";
+import { crackSound, freezeSound } from "./lib/sound";
+const FrozenObject = lazy(() => import("./components/FrozenObject"));
 gsap.registerPlugin(ScrollTrigger);
 
 export default function App() {
   const root = useRef<HTMLDivElement>(null);
-  const [quality, setQuality] = useState<Quality>(initialQuality);
+  const [quality] = useState<Quality>(initialQuality);
   const [loadObject, setLoadObject] = useState(false);
   const [menu, setMenu] = useState(false);
   const [run, setRun] = useState(0);
+  const [webglAvailable, setWebglAvailable] = useState(supportsWebGL);
+  const disableWebGL = useCallback(() => setWebglAvailable(false), []);
+  const titleRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    document.querySelector(".ice-title")?.setAttribute("aria-label", "ICE");
-    document
-      .querySelectorAll(".title-clouds,.title-reflection")
-      .forEach((el) => el.setAttribute("aria-hidden", "true"));
+    const el = titleRef.current;
+    if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const move = (event: PointerEvent) => {
+      const bounds = el.getBoundingClientRect();
+      const x = (event.clientX - (bounds.left + bounds.width / 2)) / bounds.width;
+      const y = (event.clientY - (bounds.top + bounds.height / 2)) / bounds.height;
+      el.style.setProperty("--tilt-x", `${(-y * 9).toFixed(2)}deg`);
+      el.style.setProperty("--tilt-y", `${(x * 13).toFixed(2)}deg`);
+    };
+    const reset = () => {
+      el.style.setProperty("--tilt-x", "0deg");
+      el.style.setProperty("--tilt-y", "0deg");
+    };
+    document.addEventListener("pointermove", move);
+    document.addEventListener("pointerleave", reset);
+    return () => {
+      document.removeEventListener("pointermove", move);
+      document.removeEventListener("pointerleave", reset);
+    };
   }, []);
-  useEffect(
-    () =>
-      samplePerformance(() =>
-        setQuality((q) => (q === "high" ? "medium" : "low")),
-      ),
-    [],
-  );
+  const wallRef = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const el = wallRef.current;
+    if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const move = (event: PointerEvent) => {
+      const bounds = el.parentElement!.getBoundingClientRect();
+      const x = (event.clientX - (bounds.left + bounds.width / 2)) / bounds.width;
+      const y = (event.clientY - (bounds.top + bounds.height / 2)) / bounds.height;
+      el.style.setProperty("--wall-x", `${(x * -22).toFixed(2)}px`);
+      el.style.setProperty("--wall-y", `${(y * -14).toFixed(2)}px`);
+    };
+    document.addEventListener("pointermove", move);
+    return () => document.removeEventListener("pointermove", move);
+  }, []);
   useEffect(() => {
     const target = document.querySelector("#object");
     if (!target) return;
@@ -57,7 +87,7 @@ export default function App() {
           0.85,
         )
         .from(
-          ".ice-title",
+          ".ice-hero-img, .ice-hero-3d",
           {
             opacity: 0,
             y: 35,
@@ -66,11 +96,6 @@ export default function App() {
             ease: "power2.out",
           },
           1.1,
-        )
-        .from(
-          ".title-cracks",
-          { opacity: 0, scale: 0.85, duration: 0.35, repeat: 1, yoyo: true },
-          1.85,
         )
         .from(
           ".sphere",
@@ -96,6 +121,7 @@ export default function App() {
     return () => ctx.revert();
   }, [run]);
   const replay = () => {
+    freezeSound();
     scrollTo({ top: 0, behavior: "smooth" });
     setTimeout(() => setRun((x) => x + 1), 500);
   };
@@ -103,9 +129,6 @@ export default function App() {
     <div ref={root} className={`site quality-${quality}`}>
       <header className="nav">
         <div className="nav-inner">
-          <a className="brand" href="#home" aria-label="ICE home">
-            <img src="/ice-logo.webp" alt="" />
-          </a>
           <button
             className="menu"
             aria-label="Toggle navigation"
@@ -134,47 +157,48 @@ export default function App() {
       <main>
         <section id="home" className="hero" aria-labelledby="hero-title">
           <div className="hero-darkness" />
+          <img className="hero-bg" src="/images/ice-bg.png" alt="" aria-hidden="true" />
           <AmbientCanvas type="mist" quality={quality} />
           <AmbientCanvas type="crystals" quality={quality} />
           <div className="light-sweep" />
-          <svg
-            className="edge-crack left"
-            viewBox="0 0 240 900"
-            aria-hidden="true"
-          >
-            <path d="M0 170 70 220 42 305 116 349 68 438 143 507 95 590 183 666M70 220l83-55M42 305 0 340m116 9 65-58M68 438 0 472m143 35 67-18M95 590 20 640" />
-          </svg>
-          <svg
-            className="edge-crack right"
-            viewBox="0 0 240 900"
-            aria-hidden="true"
-          >
-            <path d="M240 72 165 142 192 235 116 300 156 385 78 471 123 550 48 655M165 142 85 94m107 141 48 37m-124 28-78-44m118 129 72-9M78 471 8 448m115 102 85 63" />
-          </svg>
           <div className="hero-content">
             <p className="eyebrow">AN EXPERIMENTAL STUDY OF ICE</p>
-            <div
-              className="title-wrap"
-              onClick={(e) => e.currentTarget.classList.toggle("pulse")}
-            >
-              <h1 id="hero-title" className="ice-title" data-text="ICE">
-                ICE
-              </h1>
-              <span className="title-clouds">ICE</span>
-              <svg
-                className="title-cracks"
-                viewBox="0 0 800 260"
-                aria-hidden="true"
-              >
-                <path d="M132 8l36 61-21 37 42 57-18 89M405 4l-22 68 42 41-35 54 29 84M682 18l-38 54 25 43-46 58 19 69" />
-              </svg>
-              <span className="title-reflection" aria-hidden="true">
-                ICE
-              </span>
+            <div className="title-wrap" ref={titleRef}>
+              {webglAvailable && quality !== "low" ? (
+                <SceneErrorBoundary
+                  fallback={
+                    <img
+                      id="hero-title"
+                      className="ice-hero-img"
+                      src="/images/ice-hero.png"
+                      alt="ICE"
+                    />
+                  }
+                  onError={disableWebGL}
+                >
+                  <IceTitle3D quality={quality} onFailure={disableWebGL} />
+                </SceneErrorBoundary>
+              ) : (
+                <img
+                  id="hero-title"
+                  className="ice-hero-img"
+                  src="/images/ice-hero.png"
+                  alt="ICE"
+                />
+              )}
             </div>
-            <IceSphere quality={quality} />
+            {webglAvailable && quality !== "low" ? (
+              <SceneErrorBoundary
+                fallback={<CssIceSphere />}
+                onError={disableWebGL}
+              >
+                <IceSphere quality={quality} onFailure={disableWebGL} />
+              </SceneErrorBoundary>
+            ) : (
+              <CssIceSphere />
+            )}
             <p className="hero-copy">FORMED IN SILENCE. BUILT TO ENDURE.</p>
-            <a className="enter" href="#about">
+            <a className="enter" href="#about" onClick={crackSound}>
               ENTER THE COLD
             </a>
           </div>
@@ -280,13 +304,26 @@ export default function App() {
             <Suspense
               fallback={<div className="object-loading">CONDENSING…</div>}
             >
-              <FrozenObject />
+              {webglAvailable && quality !== "low" ? (
+                <SceneErrorBoundary
+                  fallback={<FrozenObject />}
+                  onError={disableWebGL}
+                >
+                  <div className="object-stage">
+                    <IceSword quality={quality} onFailure={disableWebGL} />
+                    <p>DRAG TO TURN · ARROW KEYS TO ROTATE</p>
+                  </div>
+                </SceneErrorBoundary>
+              ) : (
+                <FrozenObject />
+              )}
             </Suspense>
           ) : (
             <div className="object-loading">APPROACH TO REVEAL</div>
           )}
         </section>
         <section id="contact" className="ending">
+          <img ref={wallRef} className="ending-bg" src="/images/ice-wall-bg.png" alt="" aria-hidden="true" />
           <div className="frost-clear" />
           <p>
             THE ICE EVENTUALLY

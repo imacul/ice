@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { Quality } from './quality';
+import type { Quality } from '../lib/quality';
 
 export default function AmbientCanvas({ type, quality }: { type: 'mist' | 'crystals', quality: Quality }) {
   const ref = useRef<HTMLCanvasElement>(null);
