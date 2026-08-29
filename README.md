@@ -1,29 +1,29 @@
-# ICE — An Experimental Study of Ice
+# ICE: An Experimental Study of Ice
 
 **[Live site →](https://ice-gold.vercel.app)**
 
 ![ICE screenshot](.github/screenshot.png)
 
-A one-page, cinematic React + Three.js experience built around a single word: **ICE**. Real 3D glass typography, a draggable ice sphere, an interactive ice sword, and a scroll-driven descent through a frozen archive — all running as live WebGL, with a fully-styled CSS/canvas fallback for devices that can't handle it.
+A one-page, cinematic React + Three.js experience built around a single word: **ICE**. Real 3D glass typography, a draggable ice sphere, an interactive ice sword, and a scroll-driven descent through a frozen archive. All of it runs as live WebGL, with a fully-styled CSS/canvas fallback for devices that can't handle it.
 
 This is the "Ice" entry in a four-elements series of visual studies (Fire already exists as a sibling project) exploring how far a single design idea can be pushed with real-time 3D, procedural materials, and motion design.
 
 ## Highlights
 
-- **Live 3D typography** — the hero "ICE" text and the companion sphere are real glTF models (authored in Blender, exported lightweight) rendered with Three.js `MeshPhysicalMaterial` glass shading and a procedurally generated crack normal map (no texture download).
-- **Fully interactive** — every 3D piece (hero text, sphere, sword in the Object section) supports drag-to-rotate, arrow-key rotation, and idle cursor-follow parallax, with a crack sound effect on grab.
-- **Graceful degradation** — a one-time device-capability check (not a runtime FPS gate that fights the user mid-interaction) decides whether to render live WebGL or a matching static/CSS fallback, with real error boundaries around every 3D component.
-- **Real asset pipeline** — a 730K-polygon Blender scene became a single pre-rendered background image rather than a doomed live load; a 4MB textured sword got its textures resized and modifiers applied down to ~1.4MB before ever reaching the browser.
-- **Scroll-driven narrative** — GSAP + ScrollTrigger carry the page through Memory, States, Object, and Ending sections, each with its own reveal choreography.
-- **Sound design** — short, licensed crack/freeze effects tied to key interactions (CTA click, grabbing a 3D piece, replay), never autoplaying.
+- **Live 3D typography**: the hero "ICE" text and the companion sphere are real glTF models (authored in Blender, exported lightweight) rendered with Three.js `MeshPhysicalMaterial` glass shading and a procedurally generated crack normal map (no texture download).
+- **Fully interactive**: every 3D piece (hero text, sphere, sword in the Object section) supports drag-to-rotate, arrow-key rotation, and idle cursor-follow parallax, with a crack sound effect on grab.
+- **Graceful degradation**: a one-time device-capability check (not a runtime FPS gate that fights the user mid-interaction) decides whether to render live WebGL or a matching static/CSS fallback, with real error boundaries around every 3D component.
+- **Real asset pipeline**: a 730K-polygon Blender scene became a single pre-rendered background image rather than a doomed live load; a 4MB textured sword got its textures resized and modifiers applied down to ~1.4MB before ever reaching the browser.
+- **Scroll-driven narrative**: GSAP + ScrollTrigger carry the page through Memory, States, Object, and Ending sections, each with its own reveal choreography.
+- **Sound design**: short, licensed crack/freeze effects tied to key interactions (CTA click, grabbing a 3D piece, replay), never autoplaying.
 
 ## Process
 
-This was built through AI-assisted development with Claude Code, and that's stated plainly rather than hidden — the code was largely generated in conversation. What made it work wasn't prompting alone; it was the same judgment that direct hand-coding requires, applied to review instead of typing:
+This was built through AI-assisted development with Claude Code, and that's stated plainly rather than hidden. The code was largely generated in conversation. What made it work wasn't prompting alone; it was the same judgment that direct hand-coding requires, applied to review instead of typing:
 
-- **Catching wrong output.** A live 3D sphere that rendered as a wireframe star-burst instead of ice, a glass material with nothing to refract that came out nearly invisible, a footer that silently broke from one overly broad CSS selector, a performance monitor that looked reasonable but was demoting render quality mid-drag — none of these were called out by a test suite. They were caught by someone looking at the running site and knowing "that's not right," then pushing until the actual cause was found and fixed, not just papered over.
+- **Catching wrong output.** A live 3D sphere that rendered as a wireframe star-burst instead of ice, a glass material with nothing to refract that came out nearly invisible, a footer that silently broke from one overly broad CSS selector, a performance monitor that looked reasonable but was demoting render quality mid-drag. None of these were called out by a test suite. They were caught by someone looking at the running site and knowing "that's not right," then pushing until the actual cause was found and fixed, not just papered over.
 - **Asset and performance decisions.** A 730K-polygon Blender scene was recognized as unfit for a live browser load and rendered to a static image instead; a 4MB textured model was deemed worth compressing before it ever reached users. Those are judgment calls about what belongs in a production frontend, not defaults an AI reaches for unprompted.
-- **Rejecting "good enough."** Multiple passes on material, color, and composition were sent back — not because they were broken, but because they didn't match the intended reference — until the result actually held up.
+- **Rejecting "good enough."** Multiple passes on material, color, and composition were sent back, not because they were broken but because they didn't match the intended reference, until the result actually held up.
 
 The takeaway isn't "AI wrote this so it doesn't count." It's that shipping something real still runs through a human who can tell correct from plausible-looking. That's the part that doesn't get automated away.
 
