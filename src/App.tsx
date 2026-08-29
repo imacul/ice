@@ -87,7 +87,7 @@ export default function App() {
           0.85,
         )
         .from(
-          ".ice-hero-img, .ice-hero-3d",
+          ".ice-title-fallback, .ice-hero-3d",
           {
             opacity: 0,
             y: 35,
@@ -167,24 +167,18 @@ export default function App() {
               {webglAvailable && quality !== "low" ? (
                 <SceneErrorBoundary
                   fallback={
-                    <img
-                      id="hero-title"
-                      className="ice-hero-img"
-                      src="/images/ice-hero.png"
-                      alt="ICE"
-                    />
+                    <h1 id="hero-title" className="ice-title-fallback">
+                      ICE
+                    </h1>
                   }
                   onError={disableWebGL}
                 >
                   <IceTitle3D quality={quality} onFailure={disableWebGL} />
                 </SceneErrorBoundary>
               ) : (
-                <img
-                  id="hero-title"
-                  className="ice-hero-img"
-                  src="/images/ice-hero.png"
-                  alt="ICE"
-                />
+                <h1 id="hero-title" className="ice-title-fallback">
+                  ICE
+                </h1>
               )}
             </div>
             {webglAvailable && quality !== "low" ? (
