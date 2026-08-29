@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { Quality } from "../lib/quality";
 import { makeCrackNormalMap } from "../lib/crackTexture";
 import { crackSound } from "../lib/sound";
@@ -32,7 +33,7 @@ export default function IceSphere({ quality, onFailure }: { quality: Quality; on
     const element = host.current;
     if (!element) return;
     let renderer: THREE.WebGLRenderer | undefined;
-    let sphere: THREE.Mesh | undefined;
+    let sphere: THREE.Object3D | undefined;
     let frame = 0, active = true, mounted = true, pointerX = 0, pointerY = 0, t = 0;
     let dragging = false, dragX = 0, dragY = 0, lastX = 0, lastY = 0;
     const disposables: { dispose: () => void }[] = [];
@@ -50,31 +51,50 @@ export default function IceSphere({ quality, onFailure }: { quality: Quality; on
       renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio, 1.5), 2));
       element.appendChild(renderer.domElement);
 
-      const geometry = new THREE.IcosahedronGeometry(1.12, quality === "high" ? 5 : 4);
-      const crackMap = makeCrackNormalMap();
-      const material = new THREE.MeshPhysicalMaterial({
-        color: 0xc5ffe0, // matches --ice (teal), same palette as the ICE title
-        emissive: 0x14b894, // darker shade of --cyan (teal)
-        emissiveIntensity: 0.5,
-        transmission: quality === "high" ? 0.28 : 0.18,
-        opacity: 0.93,
-        transparent: true,
-        roughness: 0.18,
-        metalness: 0.05,
-        ior: 1.31,
-        thickness: 0.7,
-        clearcoat: 0.6,
-        normalMap: crackMap,
-        normalScale: new THREE.Vector2(1.2, 1.2),
-        side: THREE.DoubleSide,
-      });
-      sphere = new THREE.Mesh(geometry, material);
-      scene.add(sphere);
-      disposables.push(geometry, material, crackMap);
-
       scene.add(new THREE.HemisphereLight(0xa8ffe8, 0x00101d, 2.2));
       const point = new THREE.PointLight(0x4de8c2, 9, 8); point.position.set(-2, 2, 3); scene.add(point);
       const rim = new THREE.PointLight(0x7ff0d0, 6, 8); rim.position.set(2, -1, 2.5); scene.add(rim);
+
+      const loader = new GLTFLoader();
+      loader.load(
+        "/models/ice-orb-v2.glb",
+        (gltf) => {
+          if (!mounted) return;
+          const orb = gltf.scene;
+          orb.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              disposables.push(child.geometry);
+              const mat = child.material as THREE.MeshPhysicalMaterial;
+              const crackMap = makeCrackNormalMap();
+              mat.color = new THREE.Color(0xc5ffe0); // matches --ice (teal), same palette as the ICE title
+              mat.emissive = new THREE.Color(0x14b894); // darker shade of --cyan (teal)
+              mat.emissiveIntensity = 0.5;
+              mat.transmission = quality === "high" ? 0.28 : 0.18;
+              mat.opacity = 0.93;
+              mat.transparent = true;
+              mat.roughness = 0.18;
+              mat.metalness = 0.05;
+              mat.ior = 1.31;
+              mat.thickness = 0.7;
+              mat.clearcoat = 0.6;
+              mat.normalMap = crackMap;
+              mat.normalScale.set(1.2, 1.2);
+              mat.side = THREE.DoubleSide;
+              disposables.push(mat, crackMap);
+            }
+          });
+          const box = new THREE.Box3().setFromObject(orb);
+          const size = box.getSize(new THREE.Vector3());
+          const center = box.getCenter(new THREE.Vector3());
+          orb.position.sub(center);
+          const radius = Math.max(size.x, size.y, size.z) / 2;
+          camera.position.z = radius / Math.tan((camera.fov * Math.PI) / 360) * 1.6;
+          sphere = orb;
+          scene.add(orb);
+        },
+        undefined,
+        () => fail(),
+      );
 
       const resize = () => {
         if (!renderer) return;
