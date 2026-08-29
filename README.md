@@ -17,6 +17,16 @@ This is the "Ice" entry in a four-elements series of visual studies (Fire alread
 - **Scroll-driven narrative** — GSAP + ScrollTrigger carry the page through Memory, States, Object, and Ending sections, each with its own reveal choreography.
 - **Sound design** — short, licensed crack/freeze effects tied to key interactions (CTA click, grabbing a 3D piece, replay), never autoplaying.
 
+## Process
+
+This was built through AI-assisted development with Claude Code, and that's stated plainly rather than hidden — the code was largely generated in conversation. What made it work wasn't prompting alone; it was the same judgment that direct hand-coding requires, applied to review instead of typing:
+
+- **Catching wrong output.** A live 3D sphere that rendered as a wireframe star-burst instead of ice, a glass material with nothing to refract that came out nearly invisible, a footer that silently broke from one overly broad CSS selector, a performance monitor that looked reasonable but was demoting render quality mid-drag — none of these were called out by a test suite. They were caught by someone looking at the running site and knowing "that's not right," then pushing until the actual cause was found and fixed, not just papered over.
+- **Asset and performance decisions.** A 730K-polygon Blender scene was recognized as unfit for a live browser load and rendered to a static image instead; a 4MB textured model was deemed worth compressing before it ever reached users. Those are judgment calls about what belongs in a production frontend, not defaults an AI reaches for unprompted.
+- **Rejecting "good enough."** Multiple passes on material, color, and composition were sent back — not because they were broken, but because they didn't match the intended reference — until the result actually held up.
+
+The takeaway isn't "AI wrote this so it doesn't count." It's that shipping something real still runs through a human who can tell correct from plausible-looking. That's the part that doesn't get automated away.
+
 ## Tech stack
 
 - [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
@@ -52,4 +62,4 @@ npm run preview   # preview the production build locally
 
 ## Credits
 
-Concept, direction, and iteration by [@imacul](https://github.com/imacul). Built with Claude Code.
+Concept, direction, review, and every fix described above by [@imacul](https://github.com/imacul). Built with [Claude Code](https://claude.com/claude-code).
